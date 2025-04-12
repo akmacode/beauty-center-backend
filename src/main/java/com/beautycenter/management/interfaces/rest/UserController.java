@@ -1,8 +1,8 @@
 package com.beautycenter.management.interfaces.rest;
 
 import com.beautycenter.management.application.dto.UserDTO;
+import com.beautycenter.management.application.service.UserApplicationService;
 import com.beautycenter.management.domain.model.Role;
-import com.beautycenter.management.domain.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,13 +14,14 @@ import java.util.Set;
 
 /**
  * REST controller for User operations.
+ * This controller uses the application service instead of the domain service directly.
  */
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
     
-    private final UserService userService;
+    private final UserApplicationService userApplicationService;
     
     /**
      * Create a new user.
@@ -31,7 +32,7 @@ public class UserController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO) {
-        return new ResponseEntity<>(userService.createUser(userDTO), HttpStatus.CREATED);
+        return new ResponseEntity<>(userApplicationService.createUser(userDTO), HttpStatus.CREATED);
     }
     
     /**
@@ -43,7 +44,7 @@ public class UserController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST')")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+        return ResponseEntity.ok(userApplicationService.getUserById(id));
     }
     
     /**
@@ -54,7 +55,7 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST')")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+        return ResponseEntity.ok(userApplicationService.getAllUsers());
     }
     
     /**
@@ -66,7 +67,7 @@ public class UserController {
     @GetMapping("/company/{companyId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE', 'RECEPTIONIST')")
     public ResponseEntity<List<UserDTO>> getUsersByCompanyId(@PathVariable Long companyId) {
-        return ResponseEntity.ok(userService.getUsersByCompanyId(companyId));
+        return ResponseEntity.ok(userApplicationService.getUsersByCompanyId(companyId));
     }
     
     /**
@@ -78,7 +79,7 @@ public class UserController {
     @GetMapping("/role/{role}")
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
     public ResponseEntity<List<UserDTO>> getUsersByRole(@PathVariable Role role) {
-        return ResponseEntity.ok(userService.getUsersByRole(role));
+        return ResponseEntity.ok(userApplicationService.getUsersByRole(role));
     }
     
     /**
@@ -91,7 +92,7 @@ public class UserController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
-        return ResponseEntity.ok(userService.updateUser(id, userDTO));
+        return ResponseEntity.ok(userApplicationService.updateUser(id, userDTO));
     }
     
     /**
@@ -104,7 +105,7 @@ public class UserController {
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDTO> changeUserStatus(@PathVariable Long id, @RequestParam boolean active) {
-        return ResponseEntity.ok(userService.changeUserStatus(id, active));
+        return ResponseEntity.ok(userApplicationService.changeUserStatus(id, active));
     }
     
     /**
@@ -116,7 +117,24 @@ public class UserController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+        userApplicationService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+    
+    /**
+     * Change user password.
+     *
+     * @param id the user ID
+     * @param currentPassword the current password
+     * @param newPassword the new password
+     * @return the updated user
+     */
+    @PatchMapping("/{id}/password")
+    @PreAuthorize("hasAnyRole('ADMIN') or authentication.principal.id == #id")
+    public ResponseEntity<UserDTO> changePassword(
+            @PathVariable Long id,
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword) {
+        return ResponseEntity.ok(userApplicationService.changePassword(id, currentPassword, newPassword));
     }
 }

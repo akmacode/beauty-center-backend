@@ -4,178 +4,163 @@ import com.beautycenter.management.application.dto.UserDTO;
 import com.beautycenter.management.application.mapper.UserMapper;
 import com.beautycenter.management.domain.model.Role;
 import com.beautycenter.management.domain.model.User;
-import com.beautycenter.management.domain.repository.UserRepository;
 import com.beautycenter.management.domain.service.UserService;
 import com.beautycenter.management.domain.service.exception.ResourceNotFoundException;
 import com.beautycenter.management.domain.service.exception.UserAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of the UserService.
+ * Legacy implementation of the UserApplicationService.
+ * This is kept for backward compatibility but will be replaced by UserApplicationService.
+ * @deprecated Use {@link UserApplicationService} instead
  */
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+@Deprecated
+public class UserServiceImpl {
     
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     
-    @Override
+    private final UserApplicationService userApplicationService;
+    
+    /**
+     * Create a new user.
+     *
+     * @param userDTO the user data
+     * @return the created user
+     */
     @Transactional
     public UserDTO createUser(UserDTO userDTO) {
-        // Check if username or email already exists
-        if (userRepository.existsByUsername(userDTO.getUsername())) {
-            throw new UserAlreadyExistsException("Username already exists: " + userDTO.getUsername());
-        }
-        if (userRepository.existsByEmail(userDTO.getEmail())) {
-            throw new UserAlreadyExistsException("Email already exists: " + userDTO.getEmail());
-        }
-        
-        // Map DTO to domain model
-        User user = userMapper.toDomain(userDTO);
-        
-        // Set additional properties
-        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        user.setActive(true);
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
-        
-        // Save user
-        User savedUser = userRepository.save(user);
-        
-        // Return as DTO
-        return userMapper.toDTO(savedUser);
+        logger.warn("Deprecated method createUser called. Use UserApplicationService instead.");
+        return userApplicationService.createUser(userDTO);
     }
     
-    @Override
+    /**
+     * Get user by ID.
+     *
+     * @param id the user ID
+     * @return the user
+     */
     @Transactional(readOnly = true)
     public UserDTO getUserById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        
-        return userMapper.toDTO(user);
+        logger.warn("Deprecated method getUserById called. Use UserApplicationService instead.");
+        return userApplicationService.getUserById(id);
     }
     
-    @Override
+    /**
+     * Get user by username.
+     *
+     * @param username the username
+     * @return the user
+     */
     @Transactional(readOnly = true)
     public UserDTO getUserByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
-        
-        return userMapper.toDTO(user);
+        logger.warn("Deprecated method getUserByUsername called. Use UserApplicationService instead.");
+        return userApplicationService.getUserByUsername(username);
     }
     
-    @Override
+    /**
+     * Get user by email.
+     *
+     * @param email the email
+     * @return the user
+     */
     @Transactional(readOnly = true)
     public UserDTO getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
-        
-        return userMapper.toDTO(user);
+        logger.warn("Deprecated method getUserByEmail called. Use UserApplicationService instead.");
+        return userApplicationService.getUserByEmail(email);
     }
     
-    @Override
+    /**
+     * Get all users.
+     *
+     * @return list of all users
+     */
     @Transactional(readOnly = true)
     public List<UserDTO> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toDTO)
-                .collect(Collectors.toList());
+        logger.warn("Deprecated method getAllUsers called. Use UserApplicationService instead.");
+        return userApplicationService.getAllUsers();
     }
     
-    @Override
+    /**
+     * Get users by company ID.
+     *
+     * @param companyId the company ID
+     * @return list of users for the company
+     */
     @Transactional(readOnly = true)
     public List<UserDTO> getUsersByCompanyId(Long companyId) {
-        return userRepository.findByCompanyId(companyId).stream()
-                .map(userMapper::toDTO)
-                .collect(Collectors.toList());
+        logger.warn("Deprecated method getUsersByCompanyId called. Use UserApplicationService instead.");
+        return userApplicationService.getUsersByCompanyId(companyId);
     }
     
-    @Override
+    /**
+     * Get users by role.
+     *
+     * @param role the role
+     * @return list of users with the specified role
+     */
     @Transactional(readOnly = true)
     public List<UserDTO> getUsersByRole(Role role) {
-        return userRepository.findByRole(role).stream()
-                .map(userMapper::toDTO)
-                .collect(Collectors.toList());
+        logger.warn("Deprecated method getUsersByRole called. Use UserApplicationService instead.");
+        return userApplicationService.getUsersByRole(role);
     }
     
-    @Override
+    /**
+     * Get users by roles.
+     *
+     * @param roles the roles
+     * @return list of users with any of the specified roles
+     */
     @Transactional(readOnly = true)
     public List<UserDTO> getUsersByRoles(Set<Role> roles) {
-        return userRepository.findByRolesIn(roles).stream()
-                .map(userMapper::toDTO)
-                .collect(Collectors.toList());
+        logger.warn("Deprecated method getUsersByRoles called. Use UserApplicationService instead.");
+        return userApplicationService.getUsersByRoles(roles);
     }
     
-    @Override
+    /**
+     * Update user.
+     *
+     * @param id the user ID
+     * @param userDTO the updated user data
+     * @return the updated user
+     */
     @Transactional
     public UserDTO updateUser(Long id, UserDTO userDTO) {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        
-        // Check if username already exists for another user
-        if (!existingUser.getUsername().equals(userDTO.getUsername()) && 
-                userRepository.existsByUsername(userDTO.getUsername())) {
-            throw new UserAlreadyExistsException("Username already exists: " + userDTO.getUsername());
-        }
-        
-        // Check if email already exists for another user
-        if (!existingUser.getEmail().equals(userDTO.getEmail()) && 
-                userRepository.existsByEmail(userDTO.getEmail())) {
-            throw new UserAlreadyExistsException("Email already exists: " + userDTO.getEmail());
-        }
-        
-        // Update user properties
-        existingUser.setUsername(userDTO.getUsername());
-        existingUser.setEmail(userDTO.getEmail());
-        existingUser.setFirstName(userDTO.getFirstName());
-        existingUser.setLastName(userDTO.getLastName());
-        existingUser.setPhoneNumber(userDTO.getPhoneNumber());
-        existingUser.setRoles(userDTO.getRoles());
-        existingUser.setCompanyId(userDTO.getCompanyId());
-        existingUser.setUpdatedAt(LocalDateTime.now());
-        
-        // Update password if provided
-        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        }
-        
-        // Save updated user
-        User updatedUser = userRepository.save(existingUser);
-        
-        return userMapper.toDTO(updatedUser);
+        logger.warn("Deprecated method updateUser called. Use UserApplicationService instead.");
+        return userApplicationService.updateUser(id, userDTO);
     }
     
-    @Override
+    /**
+     * Delete user.
+     *
+     * @param id the user ID
+     */
     @Transactional
     public void deleteUser(Long id) {
-        // Check if user exists
-        if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("User not found with id: " + id);
-        }
-        
-        userRepository.deleteById(id);
+        logger.warn("Deprecated method deleteUser called. Use UserApplicationService instead.");
+        userApplicationService.deleteUser(id);
     }
     
-    @Override
+    /**
+     * Change user active status.
+     *
+     * @param id the user ID
+     * @param active the active status
+     * @return the updated user
+     */
     @Transactional
     public UserDTO changeUserStatus(Long id, boolean active) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        
-        user.setActive(active);
-        user.setUpdatedAt(LocalDateTime.now());
-        
-        User updatedUser = userRepository.save(user);
-        
-        return userMapper.toDTO(updatedUser);
+        logger.warn("Deprecated method changeUserStatus called. Use UserApplicationService instead.");
+        return userApplicationService.changeUserStatus(id, active);
     }
 }

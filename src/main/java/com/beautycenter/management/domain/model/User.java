@@ -96,22 +96,55 @@ public class User {
      * Adds a role to the user.
      *
      * @param role the role to add
+     * @return true if the role was added, false if it was already present
      */
-    public void addRole(Role role) {
+    public boolean addRole(Role role) {
         if (roles == null) {
             roles = new HashSet<>();
         }
-        roles.add(role);
+        return roles.add(role);
     }
     
     /**
      * Removes a role from the user.
      *
      * @param role the role to remove
+     * @return true if the role was removed, false if it wasn't present
      */
-    public void removeRole(Role role) {
+    public boolean removeRole(Role role) {
         if (roles != null) {
-            roles.remove(role);
+            return roles.remove(role);
+        }
+        return false;
+    }
+    
+    /**
+     * Adds a role to the user by string name.
+     *
+     * @param roleName the role name to add
+     * @return true if the role was added, false otherwise
+     */
+    public boolean addRole(String roleName) {
+        try {
+            Role role = Role.valueOf(roleName);
+            return addRole(role);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+    
+    /**
+     * Removes a role from the user by string name.
+     *
+     * @param roleName the role name to remove
+     * @return true if the role was removed, false otherwise
+     */
+    public boolean removeRole(String roleName) {
+        try {
+            Role role = Role.valueOf(roleName);
+            return removeRole(role);
+        } catch (IllegalArgumentException e) {
+            return false;
         }
     }
 }
