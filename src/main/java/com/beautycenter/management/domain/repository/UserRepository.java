@@ -98,4 +98,12 @@ public interface UserRepository {
      * @return true if exists, false otherwise
      */
     boolean existsByEmail(String email);
+    
+    /**
+     * Check if a user with the given ID exists.
+     *
+     * @param id the user ID
+     * @return true if exists, false otherwise
+     */
+    boolean existsById(Long id);
 }
