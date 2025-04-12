@@ -19,7 +19,7 @@ public class AppointmentCreatedEvent extends AbstractDomainEvent {
     private final UUID serviceId;
     private final LocalDateTime startTime;
     private final LocalDateTime endTime;
-    private final AppointmentStatus status;
+   private final AppointmentStatus status;
 
     /**
      * Constructs a new AppointmentCreatedEvent.

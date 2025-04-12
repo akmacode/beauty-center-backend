@@ -22,17 +22,17 @@ public class ServiceMapper {
         }
         
         return ServiceDTO.builder()
-                .id(domain.getId())
-                .name(domain.getName())
-                .description(domain.getDescription())
-                .price(domain.getPrice())
-                .durationMinutes(domain.getDurationMinutes())
-                .category(domain.getCategory())
-                .imageUrl(domain.getImageUrl())
-                .active(domain.isActive())
-                .companyId(domain.getCompanyId())
-                .createdAt(domain.getCreatedAt())
-                .updatedAt(domain.getUpdatedAt())
+//                .id(domain.getId())
+//                .name(domain.getName())
+//                .description(domain.getDescription())
+//                .price(domain.getPrice())
+//                .durationMinutes(domain.getDurationMinutes())
+//                .category(domain.getCategory())
+//                .imageUrl(domain.getImageUrl())
+//                .active(domain.isActive())
+//                .companyId(domain.getCompanyId())
+//                .createdAt(domain.getCreatedAt())
+//                .updatedAt(domain.getUpdatedAt())
                 .build();
     }
     
@@ -48,17 +48,17 @@ public class ServiceMapper {
         }
         
         return Service.builder()
-                .id(dto.getId())
-                .name(dto.getName())
-                .description(dto.getDescription())
-                .price(dto.getPrice())
-                .durationMinutes(dto.getDurationMinutes())
-                .category(dto.getCategory())
-                .imageUrl(dto.getImageUrl())
-                .active(dto.isActive())
-                .companyId(dto.getCompanyId())
-                .createdAt(dto.getCreatedAt())
-                .updatedAt(dto.getUpdatedAt())
+//                .id(dto.getId())
+//                .name(dto.getName())
+//                .description(dto.getDescription())
+//                .price(dto.getPrice())
+//                .durationMinutes(dto.getDurationMinutes())
+//                .category(dto.getCategory())
+//                .imageUrl(dto.getImageUrl())
+//                .active(dto.isActive())
+//                .companyId(dto.getCompanyId())
+//                .createdAt(dto.getCreatedAt())
+//                .updatedAt(dto.getUpdatedAt())
                 .build();
     }
 }
