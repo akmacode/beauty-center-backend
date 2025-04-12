@@ -95,6 +95,13 @@ public class CompanyServiceImpl implements CompanyService {
     }
     
     @Override
+    public Optional<Company> findById(Long id) {
+        // Convert Long to UUID for compatibility with the domain model
+        UUID uuid = UUID.nameUUIDFromBytes(String.valueOf(id).getBytes());
+        return companyRepository.findById(uuid);
+    }
+    
+    @Override
     public Company updateCompany(UUID id, Company company) {
         Company existingCompany = companyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Company not found with ID: " + id));

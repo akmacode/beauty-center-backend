@@ -67,12 +67,20 @@ public interface CompanyService {
     List<Company> findActiveCompanies();
     
     /**
-     * Find company by ID.
+     * Find company by ID (UUID).
      *
-     * @param id the company ID
+     * @param id the company ID as UUID
      * @return the company if found
      */
     Optional<Company> findById(UUID id);
+    
+    /**
+     * Find company by ID (Long).
+     *
+     * @param id the company ID as Long
+     * @return the company if found
+     */
+    Optional<Company> findById(Long id);
     
     /**
      * Find all companies.
