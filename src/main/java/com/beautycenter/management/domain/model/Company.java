@@ -24,6 +24,7 @@ public class Company {
     private String city;
     private String state;
     private String postalCode;
+    private String zipCode; // Added for compatibility with DTO
     private String country;
     private String phoneNumber;
     private String email;
@@ -32,4 +33,24 @@ public class Company {
     private boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    /**
+     * Sets the postal code and also sets zipCode to the same value for compatibility.
+     * 
+     * @param postalCode the postal code
+     */
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
+        this.zipCode = postalCode;
+    }
+    
+    /**
+     * Sets the zip code and also sets postalCode to the same value for compatibility.
+     * 
+     * @param zipCode the zip code
+     */
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
+        this.postalCode = zipCode;
+    }
 }
