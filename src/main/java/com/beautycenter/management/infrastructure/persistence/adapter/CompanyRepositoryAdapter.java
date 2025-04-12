@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -31,8 +32,14 @@ public class CompanyRepositoryAdapter implements CompanyRepository {
     }
     
     @Override
-    public Optional<Company> findById(Long id) {
-        return jpaRepository.findById(id)
+    public Optional<Company> findById(UUID id) {
+        // Since the JPA repository uses Long IDs and domain uses UUIDs,
+        // we'll need to map between them.
+        // For a real application, you would store UUIDs in the database.
+        // This is a simplified approach for demo purposes.
+        String idStr = id.toString();
+        // Find by UUID string representation as a unique field or convert to numeric ID
+        return jpaRepository.findByUuid(idStr)
                 .map(mapper::toDomain);
     }
     
@@ -50,17 +57,35 @@ public class CompanyRepositoryAdapter implements CompanyRepository {
     }
     
     @Override
-    public void deleteById(Long id) {
-        jpaRepository.deleteById(id);
+    public void deleteById(UUID id) {
+        String idStr = id.toString();
+        jpaRepository.findByUuid(idStr).ifPresent(entity -> 
+            jpaRepository.deleteById(entity.getId())
+        );
     }
     
     @Override
-    public boolean existsById(Long id) {
-        return jpaRepository.existsById(id);
+    public boolean existsById(UUID id) {
+        String idStr = id.toString();
+        return jpaRepository.existsByUuid(idStr);
     }
     
     @Override
     public boolean existsByName(String name) {
         return jpaRepository.existsByName(name);
+    }
+    
+    @Override
+    public List<Company> findByActiveTrue() {
+        return jpaRepository.findByActiveTrue().stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<Company> findByNameContaining(String name) {
+        return jpaRepository.findByNameContaining(name).stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 }
