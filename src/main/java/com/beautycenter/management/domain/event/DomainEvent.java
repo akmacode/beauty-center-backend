@@ -1,6 +1,6 @@
 package com.beautycenter.management.domain.event;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -10,21 +10,21 @@ import java.util.UUID;
 public interface DomainEvent {
     
     /**
-     * Get the unique identifier of this event.
+     * Get the event ID.
      *
      * @return the event ID
      */
     UUID getEventId();
     
     /**
-     * Get the timestamp when this event occurred.
+     * Get the event timestamp.
      *
      * @return the event timestamp
      */
-    Instant getOccurredAt();
+    LocalDateTime getTimestamp();
     
     /**
-     * Get the type of this event.
+     * Get the event type.
      *
      * @return the event type
      */

@@ -1,34 +1,22 @@
 package com.beautycenter.management.domain.event;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Base implementation for domain events.
+ * Abstract base class for domain events.
  * Provides common functionality for all domain events.
  */
 public abstract class AbstractDomainEvent implements DomainEvent {
     
     private final UUID eventId;
-    private final Instant occurredAt;
+    private final LocalDateTime timestamp;
+    private final String eventType;
     
-    /**
-     * Create a new domain event with a generated ID and current timestamp.
-     */
-    protected AbstractDomainEvent() {
+    protected AbstractDomainEvent(String eventType) {
         this.eventId = UUID.randomUUID();
-        this.occurredAt = Instant.now();
-    }
-    
-    /**
-     * Create a new domain event with the specified ID and timestamp.
-     *
-     * @param eventId the event ID
-     * @param occurredAt the timestamp when the event occurred
-     */
-    protected AbstractDomainEvent(UUID eventId, Instant occurredAt) {
-        this.eventId = eventId;
-        this.occurredAt = occurredAt;
+        this.timestamp = LocalDateTime.now();
+        this.eventType = eventType;
     }
     
     @Override
@@ -37,12 +25,12 @@ public abstract class AbstractDomainEvent implements DomainEvent {
     }
     
     @Override
-    public Instant getOccurredAt() {
-        return occurredAt;
+    public LocalDateTime getTimestamp() {
+        return timestamp;
     }
     
     @Override
     public String getEventType() {
-        return this.getClass().getSimpleName();
+        return eventType;
     }
 }
