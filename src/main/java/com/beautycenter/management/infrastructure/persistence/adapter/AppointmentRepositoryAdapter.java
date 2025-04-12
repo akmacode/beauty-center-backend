@@ -2,112 +2,112 @@ package com.beautycenter.management.infrastructure.persistence.adapter;
 
 import com.beautycenter.management.domain.model.Appointment;
 import com.beautycenter.management.domain.model.AppointmentStatus;
+import com.beautycenter.management.domain.model.Customer;
+import com.beautycenter.management.domain.model.Employee;
 import com.beautycenter.management.domain.repository.AppointmentRepository;
-import com.beautycenter.management.infrastructure.persistence.entity.AppointmentEntity;
-import com.beautycenter.management.infrastructure.persistence.mapper.AppointmentMapper;
-import com.beautycenter.management.infrastructure.persistence.repository.AppointmentJpaRepository;
+import com.beautycenter.management.infrastructure.persistence.entity.CustomerEntity;
+import com.beautycenter.management.infrastructure.persistence.entity.EmployeeEntity;
+import com.beautycenter.management.infrastructure.persistence.mapper.AppointmentEntityMapper;
+import com.beautycenter.management.infrastructure.persistence.mapper.CustomerEntityMapper;
+import com.beautycenter.management.infrastructure.persistence.mapper.EmployeeEntityMapper;
+import com.beautycenter.management.infrastructure.persistence.repository.JpaAppointmentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 /**
- * Adapter implementation of AppointmentRepository.
- * Bridges the domain with the JPA infrastructure.
+ * Adapter implementation of the AppointmentRepository interface.
+ * Connects the domain repository to the JPA repository.
  */
-@Repository
+@Component
 @RequiredArgsConstructor
 public class AppointmentRepositoryAdapter implements AppointmentRepository {
-    
-    private final AppointmentJpaRepository jpaRepository;
-    private final AppointmentMapper mapper;
-    
+
+    private final JpaAppointmentRepository jpaRepository;
+    private final AppointmentEntityMapper appointmentMapper;
+    private final CustomerEntityMapper customerMapper;
+    private final EmployeeEntityMapper employeeMapper;
+
     @Override
     public Appointment save(Appointment appointment) {
-        AppointmentEntity entity = mapper.toEntity(appointment);
-        AppointmentEntity savedEntity = jpaRepository.save(entity);
-        return mapper.toDomain(savedEntity);
+        var entity = appointmentMapper.toEntity(appointment);
+        var savedEntity = jpaRepository.save(entity);
+        return appointmentMapper.toDomain(savedEntity);
     }
-    
+
     @Override
-    public Optional<Appointment> findById(Long id) {
+    public Optional<Appointment> findById(UUID id) {
         return jpaRepository.findById(id)
-                .map(mapper::toDomain);
+                .map(appointmentMapper::toDomain);
     }
-    
+
     @Override
     public List<Appointment> findAll() {
-        return jpaRepository.findAll().stream()
-                .map(mapper::toDomain)
-                .collect(Collectors.toList());
+        return appointmentMapper.toDomainList(jpaRepository.findAll());
     }
-    
+
     @Override
-    public List<Appointment> findByCustomerId(Long customerId) {
-        return jpaRepository.findByCustomerId(customerId).stream()
-                .map(mapper::toDomain)
-                .collect(Collectors.toList());
+    public List<Appointment> findByCustomer(Customer customer) {
+        CustomerEntity customerEntity = customerMapper.toEntity(customer);
+        return appointmentMapper.toDomainList(jpaRepository.findByCustomer(customerEntity));
     }
-    
+
     @Override
-    public List<Appointment> findByEmployeeId(Long employeeId) {
-        return jpaRepository.findByEmployeeId(employeeId).stream()
-                .map(mapper::toDomain)
-                .collect(Collectors.toList());
+    public List<Appointment> findByEmployee(Employee employee) {
+        EmployeeEntity employeeEntity = employeeMapper.toEntity(employee);
+        return appointmentMapper.toDomainList(jpaRepository.findByEmployee(employeeEntity));
     }
-    
+
     @Override
-    public List<Appointment> findByCompanyId(Long companyId) {
-        return jpaRepository.findByCompanyId(companyId).stream()
-                .map(mapper::toDomain)
-                .collect(Collectors.toList());
+    public List<Appointment> findByCompanyId(UUID companyId) {
+        return appointmentMapper.toDomainList(jpaRepository.findByCompanyId(companyId));
     }
-    
+
     @Override
     public List<Appointment> findByStatus(AppointmentStatus status) {
-        return jpaRepository.findByStatus(status).stream()
-                .map(mapper::toDomain)
-                .collect(Collectors.toList());
+        return appointmentMapper.toDomainList(jpaRepository.findByStatus(status.name()));
     }
-    
+
     @Override
-    public List<Appointment> findByCompanyIdAndStatus(Long companyId, AppointmentStatus status) {
-        return jpaRepository.findByCompanyIdAndStatus(companyId, status).stream()
-                .map(mapper::toDomain)
-                .collect(Collectors.toList());
+    public List<Appointment> findByCompanyIdAndStatus(UUID companyId, AppointmentStatus status) {
+        return appointmentMapper.toDomainList(
+                jpaRepository.findByCompanyIdAndStatus(companyId, status.name()));
     }
-    
+
     @Override
     public List<Appointment> findByStartTimeBetween(LocalDateTime start, LocalDateTime end) {
-        return jpaRepository.findByStartTimeBetween(start, end).stream()
-                .map(mapper::toDomain)
-                .collect(Collectors.toList());
+        return appointmentMapper.toDomainList(jpaRepository.findByStartTimeBetween(start, end));
     }
-    
+
     @Override
-    public List<Appointment> findByEmployeeIdAndStartTimeBetween(Long employeeId, LocalDateTime start, LocalDateTime end) {
-        return jpaRepository.findByEmployeeIdAndStartTimeBetween(employeeId, start, end).stream()
-                .map(mapper::toDomain)
-                .collect(Collectors.toList());
+    public List<Appointment> findByEmployeeIdAndStartTimeBetween(UUID employeeId, LocalDateTime start, LocalDateTime end) {
+        return appointmentMapper.toDomainList(
+                jpaRepository.findByEmployeeIdAndStartTimeBetween(employeeId, start, end));
     }
-    
+
     @Override
-    public List<Appointment> findByCompanyIdAndStartTimeBetween(Long companyId, LocalDateTime start, LocalDateTime end) {
-        return jpaRepository.findByCompanyIdAndStartTimeBetween(companyId, start, end).stream()
-                .map(mapper::toDomain)
-                .collect(Collectors.toList());
+    public List<Appointment> findByCompanyIdAndStartTimeBetween(UUID companyId, LocalDateTime start, LocalDateTime end) {
+        return appointmentMapper.toDomainList(
+                jpaRepository.findByCompanyIdAndStartTimeBetween(companyId, start, end));
     }
-    
+
     @Override
-    public void deleteById(Long id) {
+    public List<Appointment> findOverlappingAppointments(UUID companyId, UUID employeeId, LocalDateTime start, LocalDateTime end) {
+        return appointmentMapper.toDomainList(
+                jpaRepository.findOverlappingAppointments(companyId, employeeId, start, end));
+    }
+
+    @Override
+    public void deleteById(UUID id) {
         jpaRepository.deleteById(id);
     }
-    
+
     @Override
-    public boolean existsById(Long id) {
+    public boolean existsById(UUID id) {
         return jpaRepository.existsById(id);
     }
 }

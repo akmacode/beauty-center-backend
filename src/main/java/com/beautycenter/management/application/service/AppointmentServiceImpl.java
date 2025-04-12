@@ -1,5 +1,7 @@
 package com.beautycenter.management.application.service;
 
+import com.beautycenter.management.application.dto.AppointmentDto;
+import com.beautycenter.management.application.mapper.AppointmentDtoMapper;
 import com.beautycenter.management.domain.event.DomainEventPublisher;
 import com.beautycenter.management.domain.event.appointment.AppointmentCreatedEvent;
 import com.beautycenter.management.domain.model.Appointment;
@@ -20,6 +22,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the AppointmentService interface.
@@ -32,6 +35,57 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
     private final DomainEventPublisher eventPublisher;
+    private final AppointmentDtoMapper appointmentDtoMapper;
+
+    /**
+     * Creates an appointment from a DTO.
+     * 
+     * @param dto the appointment DTO
+     * @return the created appointment DTO
+     */
+    public AppointmentDto createAppointmentFromDto(AppointmentDto dto) {
+        Appointment appointmentModel = appointmentDtoMapper.toDomain(dto);
+        Appointment createdAppointment = createAppointment(appointmentModel);
+        return appointmentDtoMapper.toDto(createdAppointment);
+    }
+    
+    /**
+     * Finds all appointments and returns them as DTOs.
+     * 
+     * @return list of appointment DTOs
+     */
+    public List<AppointmentDto> findAllAppointmentsAsDto() {
+        List<Appointment> appointments = findAllAppointments();
+        return appointments.stream()
+                .map(appointmentDtoMapper::toDto)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Finds an appointment by ID and returns it as a DTO.
+     * 
+     * @param id the appointment ID
+     * @return optional containing the appointment DTO if found
+     */
+    public Optional<AppointmentDto> findByIdAsDto(UUID id) {
+        return findById(id).map(appointmentDtoMapper::toDto);
+    }
+    
+    /**
+     * Updates an appointment from a DTO.
+     * 
+     * @param dto the appointment DTO
+     * @return the updated appointment DTO
+     */
+    public AppointmentDto updateAppointmentFromDto(AppointmentDto dto) {
+        if (dto.getId() == null) {
+            throw new IllegalArgumentException("Appointment ID cannot be null for update operation");
+        }
+        
+        Appointment appointmentModel = appointmentDtoMapper.toDomain(dto);
+        Appointment updatedAppointment = updateAppointment(appointmentModel);
+        return appointmentDtoMapper.toDto(updatedAppointment);
+    }
 
     @Override
     public Appointment createAppointment(Appointment appointment) {
@@ -176,5 +230,27 @@ public class AppointmentServiceImpl implements AppointmentService {
                 company.getId(), employee.getId(), start, end);
         
         return overlappingAppointments.isEmpty();
+    }
+    
+    /**
+     * Cancels an appointment and returns the result as a DTO.
+     * 
+     * @param appointmentId the appointment ID
+     * @return the updated appointment DTO
+     */
+    public AppointmentDto cancelAppointmentAsDto(UUID appointmentId) {
+        Appointment appointment = cancelAppointment(appointmentId);
+        return appointmentDtoMapper.toDto(appointment);
+    }
+    
+    /**
+     * Completes an appointment and returns the result as a DTO.
+     * 
+     * @param appointmentId the appointment ID
+     * @return the updated appointment DTO
+     */
+    public AppointmentDto completeAppointmentAsDto(UUID appointmentId) {
+        Appointment appointment = completeAppointment(appointmentId);
+        return appointmentDtoMapper.toDto(appointment);
     }
 }

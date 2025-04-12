@@ -6,46 +6,39 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * JPA entity for Service data in the database.
- * Represents the persistence model for beauty services.
+ * JPA entity for Customer data in the database.
+ * Represents the persistence model for customers.
  */
 @Entity
-@Table(name = "services")
+@Table(name = "customers")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ServiceEntity {
+public class CustomerEntity {
 
     @Id
     @Column(name = "id")
     private UUID id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
 
-    @Column(name = "duration_minutes")
-    private Long durationMinutes;
+    @Column(name = "email", unique = true)
+    private String email;
 
-    @Column(name = "price", precision = 10, scale = 2)
-    private BigDecimal price;
+    @Column(name = "phone_number")
+    private String phoneNumber;
 
-    @Column(name = "company_id")
-    private UUID companyId;
-
-    @Column(name = "category")
-    private String category;
-
-    @Column(name = "active")
-    private boolean active;
+    @Column(name = "address")
+    private String address;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
