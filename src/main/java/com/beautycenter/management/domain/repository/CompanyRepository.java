@@ -4,6 +4,7 @@ import com.beautycenter.management.domain.model.Company;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Repository interface for Company domain entity.
@@ -22,10 +23,10 @@ public interface CompanyRepository {
     /**
      * Find a company by ID.
      *
-     * @param id the company ID
+     * @param id the company ID as UUID
      * @return an Optional containing the company if found, empty otherwise
      */
-    Optional<Company> findById(Long id);
+    Optional<Company> findById(UUID id);
     
     /**
      * Find all companies.
@@ -45,17 +46,17 @@ public interface CompanyRepository {
     /**
      * Delete a company by ID.
      *
-     * @param id the company ID
+     * @param id the company ID as UUID
      */
-    void deleteById(Long id);
+    void deleteById(UUID id);
     
     /**
      * Check if a company exists by ID.
      *
-     * @param id the company ID
+     * @param id the company ID as UUID
      * @return true if exists, false otherwise
      */
-    boolean existsById(Long id);
+    boolean existsById(UUID id);
     
     /**
      * Check if a company exists by name.
@@ -64,4 +65,19 @@ public interface CompanyRepository {
      * @return true if exists, false otherwise
      */
     boolean existsByName(String name);
+    
+    /**
+     * Find companies by active status.
+     *
+     * @return list of active companies
+     */
+    List<Company> findByActiveTrue();
+    
+    /**
+     * Find companies by name containing the given string.
+     *
+     * @param name the name string to search for
+     * @return list of matching companies
+     */
+    List<Company> findByNameContaining(String name);
 }
