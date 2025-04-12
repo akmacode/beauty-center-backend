@@ -1,7 +1,9 @@
 package com.beautycenter.management.interfaces.rest;
 
+import com.beautycenter.management.application.dto.CompanyDTO;
 import com.beautycenter.management.application.service.CompanyApplicationService;
-import com.beautycenter.management.domain.model.Company;
+import com.beautycenter.management.application.mapper.CompanyMapper;
+import com.beautycenter.management.domain.service.exception.ResourceNotFoundException;
 import com.beautycenter.management.interfaces.rest.dto.CompanyDto;
 import com.beautycenter.management.interfaces.rest.dto.LocationDto;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +19,15 @@ import java.util.stream.Collectors;
 
 /**
  * REST controller for Company-related operations.
+ * This controller uses CompanyApplicationService for all operations and works with DTOs.
  */
 @RestController
 @RequestMapping("/companies")
 @RequiredArgsConstructor
 public class CompanyController {
     
-    private final CompanyApplicationService companyService;
+    private final CompanyApplicationService companyApplicationService;
+    private final CompanyMapper companyMapper;
     
     /**
      * Create a new company.
@@ -33,9 +37,18 @@ public class CompanyController {
      */
     @PostMapping
     public ResponseEntity<CompanyDto> createCompany(@Valid @RequestBody CompanyDto companyDto) {
-        Company company = mapToEntity(companyDto);
-        Company createdCompany = companyService.createCompany(company);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapToDto(createdCompany));
+        try {
+            // First convert our controller DTO to application DTO
+            CompanyDTO applicationDto = convertToApplicationDTO(companyDto);
+            
+            // Create the company using the application service
+            CompanyDTO createdCompany = companyApplicationService.createCompany(applicationDto);
+            
+            // Convert back to controller DTO for response
+            return ResponseEntity.status(HttpStatus.CREATED).body(convertToControllerDTO(createdCompany));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
     
     /**
@@ -45,9 +58,9 @@ public class CompanyController {
      */
     @GetMapping
     public ResponseEntity<List<CompanyDto>> getAllCompanies() {
-        List<Company> companies = companyService.findAll();
+        List<CompanyDTO> companies = companyApplicationService.getAllCompanies();
         List<CompanyDto> companyDtos = companies.stream()
-                .map(this::mapToDto)
+                .map(this::convertToControllerDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(companyDtos);
     }
@@ -59,9 +72,9 @@ public class CompanyController {
      */
     @GetMapping("/active")
     public ResponseEntity<List<CompanyDto>> getActiveCompanies() {
-        List<Company> companies = companyService.findActiveCompanies();
+        List<CompanyDTO> companies = companyApplicationService.getActiveCompanies();
         List<CompanyDto> companyDtos = companies.stream()
-                .map(this::mapToDto)
+                .map(this::convertToControllerDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(companyDtos);
     }
@@ -74,9 +87,9 @@ public class CompanyController {
      */
     @GetMapping("/search")
     public ResponseEntity<List<CompanyDto>> searchCompaniesByName(@RequestParam String name) {
-        List<Company> companies = companyService.findByNameContaining(name);
+        List<CompanyDTO> companies = companyApplicationService.searchCompaniesByName(name);
         List<CompanyDto> companyDtos = companies.stream()
-                .map(this::mapToDto)
+                .map(this::convertToControllerDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(companyDtos);
     }
@@ -89,9 +102,30 @@ public class CompanyController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<CompanyDto> getCompanyById(@PathVariable UUID id) {
-        Company company = companyService.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Company not found with ID: " + id));
-        return ResponseEntity.ok(mapToDto(company));
+        try {
+            // Convert UUID to Long since our application layer uses Long IDs
+            Long longId = id.getMostSignificantBits();
+            CompanyDTO company = companyApplicationService.getCompanyById(longId);
+            return ResponseEntity.ok(convertToControllerDTO(company));
+        } catch (ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
+    
+    /**
+     * Get a company by ID (using Long ID).
+     *
+     * @param id the company ID as Long
+     * @return the company
+     */
+    @GetMapping("/id/{id}")
+    public ResponseEntity<CompanyDto> getCompanyByLongId(@PathVariable Long id) {
+        try {
+            CompanyDTO company = companyApplicationService.getCompanyById(id);
+            return ResponseEntity.ok(convertToControllerDTO(company));
+        } catch (ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
     
     /**
@@ -102,14 +136,14 @@ public class CompanyController {
      * @return the updated company
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CompanyDto> updateCompany(@PathVariable UUID id, @Valid @RequestBody CompanyDto companyDto) {
-        companyDto.setId(id); // Ensure the ID is set correctly
-        
+    public ResponseEntity<CompanyDto> updateCompany(@PathVariable Long id, @Valid @RequestBody CompanyDto companyDto) {
         try {
-            Company company = mapToEntity(companyDto);
-            Company updatedCompany = companyService.updateCompany(id, company);
-            return ResponseEntity.ok(mapToDto(updatedCompany));
-        } catch (IllegalArgumentException e) {
+            CompanyDTO applicationDto = convertToApplicationDTO(companyDto);
+            CompanyDTO updatedCompany = companyApplicationService.updateCompany(id, applicationDto);
+            return ResponseEntity.ok(convertToControllerDTO(updatedCompany));
+        } catch (ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
@@ -121,12 +155,14 @@ public class CompanyController {
      * @return no content
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCompany(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteCompany(@PathVariable Long id) {
         try {
-            companyService.deleteCompany(id);
+            companyApplicationService.deleteCompany(id);
             return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
+        } catch (ResourceNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
     
@@ -137,12 +173,14 @@ public class CompanyController {
      * @return the deactivated company
      */
     @PatchMapping("/{id}/deactivate")
-    public ResponseEntity<CompanyDto> deactivateCompany(@PathVariable UUID id) {
+    public ResponseEntity<CompanyDto> deactivateCompany(@PathVariable Long id) {
         try {
-            Company deactivatedCompany = companyService.deactivateCompany(id);
-            return ResponseEntity.ok(mapToDto(deactivatedCompany));
-        } catch (IllegalArgumentException e) {
+            CompanyDTO deactivatedCompany = companyApplicationService.deactivateCompany(id);
+            return ResponseEntity.ok(convertToControllerDTO(deactivatedCompany));
+        } catch (ResourceNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
     
@@ -153,91 +191,72 @@ public class CompanyController {
      * @return the activated company
      */
     @PatchMapping("/{id}/activate")
-    public ResponseEntity<CompanyDto> activateCompany(@PathVariable UUID id) {
+    public ResponseEntity<CompanyDto> activateCompany(@PathVariable Long id) {
         try {
-            Company activatedCompany = companyService.activateCompany(id);
-            return ResponseEntity.ok(mapToDto(activatedCompany));
-        } catch (IllegalArgumentException e) {
+            CompanyDTO activatedCompany = companyApplicationService.activateCompany(id);
+            return ResponseEntity.ok(convertToControllerDTO(activatedCompany));
+        } catch (ResourceNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
     
     /**
-     * Maps a Company domain model to a CompanyDto.
+     * Converts application DTO to controller DTO.
      *
-     * @param company the domain model to map
-     * @return the DTO
+     * @param applicationDto the application DTO
+     * @return the controller DTO
      */
-    private CompanyDto mapToDto(Company company) {
+    private CompanyDto convertToControllerDTO(CompanyDTO applicationDto) {
         CompanyDto dto = CompanyDto.builder()
-                .id(company.getId())
-                .name(company.getName())
-                .description(company.getDescription())
-                .logoUrl(company.getLogoUrl())
-                .address(company.getAddress())
-                .city(company.getCity())
-                .state(company.getState())
-                .country(company.getCountry())
-                .zipCode(company.getZipCode())
-                .phoneNumber(company.getPhoneNumber())
-                .email(company.getEmail())
-                .website(company.getWebsite())
-                .active(company.isActive())
+                .id(applicationDto.getId() != null ? UUID.nameUUIDFromBytes(applicationDto.getId().toString().getBytes()) : null)
+                .name(applicationDto.getName())
+                .description(applicationDto.getDescription())
+                .logoUrl(applicationDto.getLogoUrl())
+                .address(applicationDto.getAddress())
+                .city(applicationDto.getCity())
+                .state(applicationDto.getState())
+                .country(applicationDto.getCountry())
+                .zipCode(applicationDto.getZipCode())
+                .phoneNumber(applicationDto.getPhoneNumber())
+                .email(applicationDto.getEmail())
+                .website(applicationDto.getWebsite())
+                .active(applicationDto.isActive())
                 .build();
         
-        // Map locations if present
-        if (company.getLocations() != null && !company.getLocations().isEmpty()) {
-            dto.setLocations(company.getLocations().stream()
-                    .map(this::mapLocationToDto)
-                    .collect(Collectors.toList()));
-        }
+        // Locations would be handled in a similar way if needed
         
         return dto;
     }
     
     /**
-     * Maps a CompanyDto to a Company domain model.
+     * Converts controller DTO to application DTO.
      *
-     * @param companyDto the DTO to map
-     * @return the domain model
+     * @param controllerDto the controller DTO
+     * @return the application DTO
      */
-    private Company mapToEntity(CompanyDto companyDto) {
-        return Company.builder()
-                .id(companyDto.getId())
-                .name(companyDto.getName())
-                .description(companyDto.getDescription())
-                .logoUrl(companyDto.getLogoUrl())
-                .address(companyDto.getAddress())
-                .city(companyDto.getCity())
-                .state(companyDto.getState())
-                .country(companyDto.getCountry())
-                .zipCode(companyDto.getZipCode())
-                .phoneNumber(companyDto.getPhoneNumber())
-                .email(companyDto.getEmail())
-                .website(companyDto.getWebsite())
-                .active(companyDto.isActive())
-                .build();
-    }
-    
-    /**
-     * Maps a Location domain model to a LocationDto.
-     *
-     * @param location the domain model to map
-     * @return the DTO
-     */
-    private LocationDto mapLocationToDto(com.beautycenter.management.domain.model.Location location) {
-        return LocationDto.builder()
-                .id(location.getId())
-                .name(location.getName())
-                .address(location.getAddress())
-                .city(location.getCity())
-                .state(location.getState())
-                .country(location.getCountry())
-                .zipCode(location.getZipCode())
-                .phoneNumber(location.getPhoneNumber())
-                .email(location.getEmail())
-                .active(location.isActive())
-                .companyId(location.getCompanyId())
-                .build();
+    private CompanyDTO convertToApplicationDTO(CompanyDto controllerDto) {
+        CompanyDTO dto = new CompanyDTO();
+        
+        // Convert UUID to Long if present
+        if (controllerDto.getId() != null) {
+            dto.setId(controllerDto.getId().getMostSignificantBits());
+        }
+        
+        dto.setName(controllerDto.getName());
+        dto.setDescription(controllerDto.getDescription());
+        dto.setLogoUrl(controllerDto.getLogoUrl());
+        dto.setAddress(controllerDto.getAddress());
+        dto.setCity(controllerDto.getCity());
+        dto.setState(controllerDto.getState());
+        dto.setCountry(controllerDto.getCountry());
+        dto.setZipCode(controllerDto.getZipCode());
+        dto.setPhoneNumber(controllerDto.getPhoneNumber());
+        dto.setEmail(controllerDto.getEmail());
+        dto.setWebsite(controllerDto.getWebsite());
+        dto.setActive(controllerDto.isActive());
+        
+        return dto;
     }
 }

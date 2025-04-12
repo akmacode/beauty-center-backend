@@ -1,6 +1,5 @@
 package com.beautycenter.management.domain.service;
 
-import com.beautycenter.management.application.dto.CompanyDTO;
 import com.beautycenter.management.domain.model.Company;
 
 import java.util.List;
@@ -8,56 +7,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Service interface for Company operations.
+ * Service interface for Company operations in the domain layer.
+ * This interface should only work with domain models, not DTOs.
  */
 public interface CompanyService {
-    
-    /**
-     * Create a new company.
-     *
-     * @param companyDTO the company data
-     * @return the created company
-     */
-    CompanyDTO createCompany(CompanyDTO companyDTO);
-    
-    /**
-     * Get company by ID.
-     *
-     * @param id the company ID
-     * @return the company
-     */
-    CompanyDTO getCompanyById(Long id);
-    
-    /**
-     * Get company by name.
-     *
-     * @param name the company name
-     * @return the company
-     */
-    CompanyDTO getCompanyByName(String name);
-    
-    /**
-     * Get all companies.
-     *
-     * @return list of all companies
-     */
-    List<CompanyDTO> getAllCompanies();
-    
-    /**
-     * Update company.
-     *
-     * @param id the company ID
-     * @param companyDTO the updated company data
-     * @return the updated company
-     */
-    CompanyDTO updateCompany(Long id, CompanyDTO companyDTO);
-    
-    /**
-     * Delete company.
-     *
-     * @param id the company ID
-     */
-    void deleteCompany(Long id);
     
     /**
      * Find active companies.
@@ -81,6 +34,14 @@ public interface CompanyService {
      * @return the company if found
      */
     Optional<Company> findById(Long id);
+    
+    /**
+     * Find company by name.
+     *
+     * @param name the company name
+     * @return the company if found
+     */
+    Optional<Company> findByName(String name);
     
     /**
      * Find all companies.
@@ -107,11 +68,27 @@ public interface CompanyService {
     Company updateCompany(UUID id, Company company);
     
     /**
-     * Delete a company by ID.
+     * Update a company.
+     *
+     * @param id the company ID to update (as Long)
+     * @param company the updated company data
+     * @return the updated company
+     */
+    Company updateCompany(Long id, Company company);
+    
+    /**
+     * Delete a company by ID (UUID).
      *
      * @param id the company ID to delete
      */
     void deleteCompany(UUID id);
+    
+    /**
+     * Delete a company by ID (Long).
+     *
+     * @param id the company ID to delete
+     */
+    void deleteCompany(Long id);
     
     /**
      * Find companies by name containing the given string.

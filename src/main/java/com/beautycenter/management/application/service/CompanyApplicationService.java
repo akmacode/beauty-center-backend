@@ -1,115 +1,90 @@
 package com.beautycenter.management.application.service;
 
-import com.beautycenter.management.domain.model.Company;
-import com.beautycenter.management.domain.service.CompanyService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.beautycenter.management.application.dto.CompanyDTO;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 /**
- * Application service for Company entity.
- * Acts as an adapter between the domain layer and the interface layer.
+ * Application service interface for Company operations.
+ * This service works with DTOs and provides the interface for the application layer.
  */
-@Service
-@RequiredArgsConstructor
-@Transactional
-public class CompanyApplicationService {
-    
-    private final CompanyService companyService;
+public interface CompanyApplicationService {
     
     /**
      * Create a new company.
      *
-     * @param company the company to create
-     * @return the created company
+     * @param companyDTO the company data to create
+     * @return the created company DTO
      */
-    public Company createCompany(Company company) {
-        return companyService.createCompany(company);
-    }
+    CompanyDTO createCompany(CompanyDTO companyDTO);
     
     /**
-     * Find a company by its ID.
+     * Get a company by ID.
      *
      * @param id the company ID
-     * @return the company if found
+     * @return the company DTO
      */
-    @Transactional(readOnly = true)
-    public Optional<Company> findById(UUID id) {
-        return companyService.findById(id);
-    }
+    CompanyDTO getCompanyById(Long id);
+    
+    /**
+     * Get a company by name.
+     *
+     * @param name the company name
+     * @return the company DTO
+     */
+    CompanyDTO getCompanyByName(String name);
+    
+    /**
+     * Get all companies.
+     *
+     * @return list of all company DTOs
+     */
+    List<CompanyDTO> getAllCompanies();
     
     /**
      * Update a company.
      *
      * @param id the company ID to update
-     * @param company the updated company data
-     * @return the updated company
+     * @param companyDTO the updated company data
+     * @return the updated company DTO
      */
-    public Company updateCompany(UUID id, Company company) {
-        return companyService.updateCompany(id, company);
-    }
-    
-    /**
-     * Find all companies.
-     *
-     * @return list of all companies
-     */
-    @Transactional(readOnly = true)
-    public List<Company> findAll() {
-        return companyService.findAll();
-    }
+    CompanyDTO updateCompany(Long id, CompanyDTO companyDTO);
     
     /**
      * Delete a company.
      *
      * @param id the company ID to delete
      */
-    public void deleteCompany(UUID id) {
-        companyService.deleteCompany(id);
-    }
+    void deleteCompany(Long id);
     
     /**
-     * Find companies by name containing the given string.
+     * Get all active companies.
+     *
+     * @return list of active company DTOs
+     */
+    List<CompanyDTO> getActiveCompanies();
+    
+    /**
+     * Search companies by name.
      *
      * @param name the name string to search for
-     * @return list of matching companies
+     * @return list of matching company DTOs
      */
-    @Transactional(readOnly = true)
-    public List<Company> findByNameContaining(String name) {
-        return companyService.findByNameContaining(name);
-    }
-    
-    /**
-     * Find active companies.
-     *
-     * @return list of active companies
-     */
-    @Transactional(readOnly = true)
-    public List<Company> findActiveCompanies() {
-        return companyService.findActiveCompanies();
-    }
-    
-    /**
-     * Deactivate a company.
-     *
-     * @param id the company ID to deactivate
-     * @return the deactivated company
-     */
-    public Company deactivateCompany(UUID id) {
-        return companyService.deactivateCompany(id);
-    }
+    List<CompanyDTO> searchCompaniesByName(String name);
     
     /**
      * Activate a company.
      *
      * @param id the company ID to activate
-     * @return the activated company
+     * @return the activated company DTO
      */
-    public Company activateCompany(UUID id) {
-        return companyService.activateCompany(id);
-    }
+    CompanyDTO activateCompany(Long id);
+    
+    /**
+     * Deactivate a company.
+     *
+     * @param id the company ID to deactivate
+     * @return the deactivated company DTO
+     */
+    CompanyDTO deactivateCompany(Long id);
 }

@@ -1,7 +1,5 @@
 package com.beautycenter.management.domain.service.impl;
 
-import com.beautycenter.management.application.dto.CompanyDTO;
-import com.beautycenter.management.application.mapper.CompanyMapper;
 import com.beautycenter.management.domain.model.Company;
 import com.beautycenter.management.domain.repository.CompanyRepository;
 import com.beautycenter.management.domain.service.CompanyService;
@@ -12,62 +10,32 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
- * Implementation of the CompanyService interface.
+ * Domain layer implementation of the CompanyService interface.
+ * This implementation works only with domain models, not DTOs.
  */
-@Service
+@Service("domainCompanyService")
 @RequiredArgsConstructor
 public class CompanyServiceImpl implements CompanyService {
     
     private final CompanyRepository companyRepository;
-    private final CompanyMapper companyMapper;
     
     @Override
-    public CompanyDTO createCompany(CompanyDTO companyDTO) {
-        Company company = companyMapper.toDomain(companyDTO);
-        Company savedCompany = createCompany(company);
-        return companyMapper.toDTO(savedCompany);
+    public Optional<Company> findById(UUID id) {
+        return companyRepository.findById(id);
     }
     
     @Override
-    public CompanyDTO getCompanyById(Long id) {
+    public Optional<Company> findById(Long id) {
         // Convert Long to UUID for compatibility with the domain model
         UUID uuid = UUID.nameUUIDFromBytes(String.valueOf(id).getBytes());
-        return findById(uuid)
-                .map(companyMapper::toDTO)
-                .orElseThrow(() -> new IllegalArgumentException("Company not found with ID: " + id));
+        return companyRepository.findById(uuid);
     }
     
     @Override
-    public CompanyDTO getCompanyByName(String name) {
-        return companyRepository.findByName(name)
-                .map(companyMapper::toDTO)
-                .orElseThrow(() -> new IllegalArgumentException("Company not found with name: " + name));
-    }
-    
-    @Override
-    public List<CompanyDTO> getAllCompanies() {
-        return findAll().stream()
-                .map(companyMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-    
-    @Override
-    public CompanyDTO updateCompany(Long id, CompanyDTO companyDTO) {
-        // Convert Long to UUID for compatibility with the domain model
-        UUID uuid = UUID.nameUUIDFromBytes(String.valueOf(id).getBytes());
-        Company company = companyMapper.toDomain(companyDTO);
-        Company updatedCompany = updateCompany(uuid, company);
-        return companyMapper.toDTO(updatedCompany);
-    }
-    
-    @Override
-    public void deleteCompany(Long id) {
-        // Convert Long to UUID for compatibility with the domain model
-        UUID uuid = UUID.nameUUIDFromBytes(String.valueOf(id).getBytes());
-        deleteCompany(uuid);
+    public Optional<Company> findByName(String name) {
+        return companyRepository.findByName(name);
     }
     
     @Override
@@ -90,18 +58,6 @@ public class CompanyServiceImpl implements CompanyService {
     }
     
     @Override
-    public Optional<Company> findById(UUID id) {
-        return companyRepository.findById(id);
-    }
-    
-    @Override
-    public Optional<Company> findById(Long id) {
-        // Convert Long to UUID for compatibility with the domain model
-        UUID uuid = UUID.nameUUIDFromBytes(String.valueOf(id).getBytes());
-        return companyRepository.findById(uuid);
-    }
-    
-    @Override
     public Company updateCompany(UUID id, Company company) {
         Company existingCompany = companyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Company not found with ID: " + id));
@@ -119,6 +75,13 @@ public class CompanyServiceImpl implements CompanyService {
     }
     
     @Override
+    public Company updateCompany(Long id, Company company) {
+        // Convert Long to UUID for compatibility with the domain model
+        UUID uuid = UUID.nameUUIDFromBytes(String.valueOf(id).getBytes());
+        return updateCompany(uuid, company);
+    }
+    
+    @Override
     public List<Company> findAll() {
         return companyRepository.findAll();
     }
@@ -129,6 +92,13 @@ public class CompanyServiceImpl implements CompanyService {
             throw new IllegalArgumentException("Company not found with ID: " + id);
         }
         companyRepository.deleteById(id);
+    }
+    
+    @Override
+    public void deleteCompany(Long id) {
+        // Convert Long to UUID for compatibility with the domain model
+        UUID uuid = UUID.nameUUIDFromBytes(String.valueOf(id).getBytes());
+        deleteCompany(uuid);
     }
     
     @Override
