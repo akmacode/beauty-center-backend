@@ -1,22 +1,23 @@
 package com.beautycenter.management.domain.service;
 
-import com.beautycenter.management.application.dto.ServiceDTO;
+import com.beautycenter.management.domain.model.Service;
 
 import java.util.List;
 import java.util.Set;
 
 /**
- * Service interface for Service operations.
+ * Service interface for Service operations in the domain layer.
+ * This interface should only work with domain models, not DTOs.
  */
 public interface ServiceService {
     
     /**
      * Create a new service.
      *
-     * @param serviceDTO the service data
+     * @param service the service data
      * @return the created service
      */
-    ServiceDTO createService(ServiceDTO serviceDTO);
+    Service createService(Service service);
     
     /**
      * Get service by ID.
@@ -24,14 +25,14 @@ public interface ServiceService {
      * @param id the service ID
      * @return the service
      */
-    ServiceDTO getServiceById(Long id);
+    Service getServiceById(Long id);
     
     /**
      * Get all services.
      *
      * @return list of all services
      */
-    List<ServiceDTO> getAllServices();
+    List<Service> getAllServices();
     
     /**
      * Get services by company ID.
@@ -39,7 +40,7 @@ public interface ServiceService {
      * @param companyId the company ID
      * @return list of services for the company
      */
-    List<ServiceDTO> getServicesByCompanyId(Long companyId);
+    List<Service> getServicesByCompanyId(Long companyId);
     
     /**
      * Get active services by company ID.
@@ -47,7 +48,7 @@ public interface ServiceService {
      * @param companyId the company ID
      * @return list of active services for the company
      */
-    List<ServiceDTO> getActiveServicesByCompanyId(Long companyId);
+    List<Service> getActiveServicesByCompanyId(Long companyId);
     
     /**
      * Get services by IDs.
@@ -55,7 +56,7 @@ public interface ServiceService {
      * @param ids the service IDs
      * @return list of services with the specified IDs
      */
-    List<ServiceDTO> getServicesByIds(Set<Long> ids);
+    List<Service> getServicesByIds(Set<Long> ids);
     
     /**
      * Get services by category.
@@ -63,7 +64,7 @@ public interface ServiceService {
      * @param category the category
      * @return list of services in the specified category
      */
-    List<ServiceDTO> getServicesByCategory(String category);
+    List<Service> getServicesByCategory(String category);
     
     /**
      * Get services by company ID and category.
@@ -72,16 +73,16 @@ public interface ServiceService {
      * @param category the category
      * @return list of services for the company in the specified category
      */
-    List<ServiceDTO> getServicesByCompanyIdAndCategory(Long companyId, String category);
+    List<Service> getServicesByCompanyIdAndCategory(Long companyId, String category);
     
     /**
      * Update service.
      *
      * @param id the service ID
-     * @param serviceDTO the updated service data
+     * @param service the updated service data
      * @return the updated service
      */
-    ServiceDTO updateService(Long id, ServiceDTO serviceDTO);
+    Service updateService(Long id, Service service);
     
     /**
      * Change service active status.
@@ -90,7 +91,7 @@ public interface ServiceService {
      * @param active the active status
      * @return the updated service
      */
-    ServiceDTO changeServiceStatus(Long id, boolean active);
+    Service changeServiceStatus(Long id, boolean active);
     
     /**
      * Delete service.
