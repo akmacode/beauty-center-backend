@@ -6,76 +6,44 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Domain model representing a service offered by the beauty center.
- * This is a core domain entity in the Beauty Center Management system.
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Service {
-    
-    private Long id;
+    private UUID id;
     private String name;
     private String description;
+    private Duration duration;
     private BigDecimal price;
-    private Integer durationMinutes;
+    private UUID companyId;
     private String category;
-    private String imageUrl;
-    
-    @Builder.Default
-    private boolean active = true;
-    
-    private Long companyId;
+    private boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
     /**
-     * Checks if the service is valid for booking.
-     *
-     * @return true if the service is valid for booking, false otherwise
+     * Gets the duration in minutes.
+     * 
+     * @return the duration in minutes
      */
-    public boolean isValidForBooking() {
-        return id != null && 
-               name != null && !name.isBlank() &&
-               price != null && price.compareTo(BigDecimal.ZERO) > 0 &&
-               durationMinutes != null && durationMinutes > 0 &&
-               active;
+    public Long getDurationMinutes() {
+        return duration != null ? duration.toMinutes() : null;
     }
     
     /**
-     * Gets the formatted price of the service.
-     *
-     * @return the formatted price
+     * Sets the duration in minutes.
+     * 
+     * @param minutes the duration in minutes
      */
-    public String getFormattedPrice() {
-        return "$" + price.toString();
-    }
-    
-    /**
-     * Gets the formatted duration of the service.
-     *
-     * @return the formatted duration
-     */
-    public String getFormattedDuration() {
-        if (durationMinutes == null) {
-            return "N/A";
-        }
-        
-        if (durationMinutes < 60) {
-            return durationMinutes + " min";
-        }
-        
-        int hours = durationMinutes / 60;
-        int minutes = durationMinutes % 60;
-        
-        if (minutes == 0) {
-            return hours + " hr";
-        }
-        
-        return hours + " hr " + minutes + " min";
+    public void setDurationMinutes(Long minutes) {
+        this.duration = minutes != null ? Duration.ofMinutes(minutes) : null;
     }
 }

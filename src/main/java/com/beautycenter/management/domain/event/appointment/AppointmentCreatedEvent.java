@@ -2,7 +2,7 @@ package com.beautycenter.management.domain.event.appointment;
 
 import com.beautycenter.management.domain.event.AbstractDomainEvent;
 import com.beautycenter.management.domain.model.Appointment;
-import com.beautycenter.management.domain.model.Appointment.AppointmentStatus;
+import com.beautycenter.management.domain.model.AppointmentStatus;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -29,9 +29,9 @@ public class AppointmentCreatedEvent extends AbstractDomainEvent {
     public AppointmentCreatedEvent(Appointment appointment) {
         super();
         this.appointmentId = appointment.getId();
-        this.customerId = appointment.getCustomer().getId();
+        this.customerId = appointment.getCustomer() != null ? appointment.getCustomer().getId() : null;
         this.employeeId = appointment.getEmployee() != null ? appointment.getEmployee().getId() : null;
-        this.serviceId = appointment.getService().getId();
+        this.serviceId = appointment.getService() != null ? appointment.getService().getId() : null;
         this.startTime = appointment.getStartTime();
         this.endTime = appointment.getEndTime();
         this.status = appointment.getStatus();

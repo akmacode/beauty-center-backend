@@ -3,13 +3,15 @@ package com.beautycenter.management.domain.service;
 import com.beautycenter.management.domain.model.Appointment;
 import com.beautycenter.management.domain.model.AppointmentStatus;
 import com.beautycenter.management.domain.model.Company;
+import com.beautycenter.management.domain.model.Customer;
+import com.beautycenter.management.domain.model.Employee;
 import com.beautycenter.management.domain.model.Service;
-import com.beautycenter.management.domain.model.User;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Service interface for appointment-related business logic.
@@ -25,7 +27,7 @@ public interface AppointmentService {
     /**
      * Find an appointment by ID
      */
-    Optional<Appointment> findById(Long id);
+    Optional<Appointment> findById(UUID id);
     
     /**
      * Find all appointments
@@ -35,12 +37,12 @@ public interface AppointmentService {
     /**
      * Find appointments by customer
      */
-    List<Appointment> findAppointmentsByCustomer(User customer);
+    List<Appointment> findAppointmentsByCustomer(Customer customer);
     
     /**
      * Find appointments by employee
      */
-    List<Appointment> findAppointmentsByEmployee(User employee);
+    List<Appointment> findAppointmentsByEmployee(Employee employee);
     
     /**
      * Find appointments by company
@@ -75,30 +77,30 @@ public interface AppointmentService {
     /**
      * Delete an appointment
      */
-    void deleteAppointment(Long id);
+    void deleteAppointment(UUID id);
     
     /**
      * Cancel an appointment
      */
-    Appointment cancelAppointment(Long id);
+    Appointment cancelAppointment(UUID id);
     
     /**
      * Complete an appointment
      */
-    Appointment completeAppointment(Long id);
+    Appointment completeAppointment(UUID id);
     
     /**
      * Add a service to an appointment
      */
-    Appointment addService(Long appointmentId, Service service);
+    Appointment addService(UUID appointmentId, Service service);
     
     /**
      * Remove a service from an appointment
      */
-    Appointment removeService(Long appointmentId, Service service);
+    Appointment removeService(UUID appointmentId, Service service);
     
     /**
      * Check if a time slot is available for a new appointment
      */
-    boolean isTimeSlotAvailable(Company company, User employee, LocalDateTime start, LocalDateTime end);
+    boolean isTimeSlotAvailable(Company company, Employee employee, LocalDateTime start, LocalDateTime end);
 }

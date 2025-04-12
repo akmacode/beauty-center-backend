@@ -2,10 +2,13 @@ package com.beautycenter.management.domain.repository;
 
 import com.beautycenter.management.domain.model.Appointment;
 import com.beautycenter.management.domain.model.AppointmentStatus;
+import com.beautycenter.management.domain.model.Customer;
+import com.beautycenter.management.domain.model.Employee;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Repository interface for Appointment domain entity.
@@ -27,7 +30,7 @@ public interface AppointmentRepository {
      * @param id the appointment ID
      * @return an Optional containing the appointment if found, empty otherwise
      */
-    Optional<Appointment> findById(Long id);
+    Optional<Appointment> findById(UUID id);
     
     /**
      * Find all appointments.
@@ -37,20 +40,20 @@ public interface AppointmentRepository {
     List<Appointment> findAll();
     
     /**
-     * Find appointments by customer ID.
+     * Find appointments by customer.
      *
-     * @param customerId the customer ID
+     * @param customer the customer
      * @return list of appointments for the customer
      */
-    List<Appointment> findByCustomerId(Long customerId);
+    List<Appointment> findByCustomer(Customer customer);
     
     /**
-     * Find appointments by employee ID.
+     * Find appointments by employee.
      *
-     * @param employeeId the employee ID
+     * @param employee the employee
      * @return list of appointments for the employee
      */
-    List<Appointment> findByEmployeeId(Long employeeId);
+    List<Appointment> findByEmployee(Employee employee);
     
     /**
      * Find appointments by company ID.
@@ -58,7 +61,7 @@ public interface AppointmentRepository {
      * @param companyId the company ID
      * @return list of appointments for the company
      */
-    List<Appointment> findByCompanyId(Long companyId);
+    List<Appointment> findByCompanyId(UUID companyId);
     
     /**
      * Find appointments by status.
@@ -75,7 +78,7 @@ public interface AppointmentRepository {
      * @param status the appointment status
      * @return list of appointments for the company with the specified status
      */
-    List<Appointment> findByCompanyIdAndStatus(Long companyId, AppointmentStatus status);
+    List<Appointment> findByCompanyIdAndStatus(UUID companyId, AppointmentStatus status);
     
     /**
      * Find appointments between start and end times.
@@ -94,7 +97,7 @@ public interface AppointmentRepository {
      * @param end the end time
      * @return list of appointments for the employee in the time range
      */
-    List<Appointment> findByEmployeeIdAndStartTimeBetween(Long employeeId, LocalDateTime start, LocalDateTime end);
+    List<Appointment> findByEmployeeIdAndStartTimeBetween(UUID employeeId, LocalDateTime start, LocalDateTime end);
     
     /**
      * Find appointments by company ID between start and end times.
@@ -104,14 +107,25 @@ public interface AppointmentRepository {
      * @param end the end time
      * @return list of appointments for the company in the time range
      */
-    List<Appointment> findByCompanyIdAndStartTimeBetween(Long companyId, LocalDateTime start, LocalDateTime end);
+    List<Appointment> findByCompanyIdAndStartTimeBetween(UUID companyId, LocalDateTime start, LocalDateTime end);
+    
+    /**
+     * Find overlapping appointments for an employee in a given time slot.
+     *
+     * @param companyId the company ID
+     * @param employeeId the employee ID
+     * @param start the start time
+     * @param end the end time
+     * @return list of overlapping appointments
+     */
+    List<Appointment> findOverlappingAppointments(UUID companyId, UUID employeeId, LocalDateTime start, LocalDateTime end);
     
     /**
      * Delete an appointment by ID.
      *
      * @param id the appointment ID
      */
-    void deleteById(Long id);
+    void deleteById(UUID id);
     
     /**
      * Check if an appointment exists by ID.
@@ -119,5 +133,5 @@ public interface AppointmentRepository {
      * @param id the appointment ID
      * @return true if exists, false otherwise
      */
-    boolean existsById(Long id);
+    boolean existsById(UUID id);
 }

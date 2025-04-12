@@ -5,8 +5,9 @@ import com.beautycenter.management.domain.event.appointment.AppointmentCreatedEv
 import com.beautycenter.management.domain.model.Appointment;
 import com.beautycenter.management.domain.model.AppointmentStatus;
 import com.beautycenter.management.domain.model.Company;
+import com.beautycenter.management.domain.model.Customer;
+import com.beautycenter.management.domain.model.Employee;
 import com.beautycenter.management.domain.model.Service;
-import com.beautycenter.management.domain.model.User;
 import com.beautycenter.management.domain.repository.AppointmentRepository;
 import com.beautycenter.management.domain.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Implementation of the AppointmentService interface.
@@ -33,14 +35,14 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public Appointment createAppointment(Appointment appointment) {
-        // Set status to SCHEDULED if not specified
+        // Set status to REQUESTED if not specified
         if (appointment.getStatus() == null) {
-            appointment.setStatus(AppointmentStatus.SCHEDULED);
+            appointment.setStatus(AppointmentStatus.REQUESTED);
         }
         
         // Validate time slot availability
         if (!isTimeSlotAvailable(
-                appointment.getCompany(), 
+                appointment.getCompanyId() != null ? new Company(appointment.getCompanyId(), null, null, null, null, null, null, null, null, null, null, null, false, null, null) : null, 
                 appointment.getEmployee(), 
                 appointment.getStartTime(), 
                 appointment.getEndTime())) {
@@ -57,7 +59,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Appointment> findById(Long id) {
+    public Optional<Appointment> findById(UUID id) {
         return appointmentRepository.findById(id);
     }
 
@@ -69,20 +71,20 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Appointment> findAppointmentsByCustomer(User customer) {
+    public List<Appointment> findAppointmentsByCustomer(Customer customer) {
         return appointmentRepository.findByCustomer(customer);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Appointment> findAppointmentsByEmployee(User employee) {
+    public List<Appointment> findAppointmentsByEmployee(Employee employee) {
         return appointmentRepository.findByEmployee(employee);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Appointment> findAppointmentsByCompany(Company company) {
-        return appointmentRepository.findByCompany(company);
+        return appointmentRepository.findByCompanyId(company.getId());
     }
 
     @Override
@@ -100,7 +102,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional(readOnly = true)
     public List<Appointment> findAppointmentsByCompanyAndDateRange(Company company, LocalDateTime start, LocalDateTime end) {
-        return appointmentRepository.findByCompanyAndStartTimeBetween(company, start, end);
+        return appointmentRepository.findByCompanyIdAndStartTimeBetween(company.getId(), start, end);
     }
 
     @Override
@@ -122,12 +124,12 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public void deleteAppointment(Long id) {
+    public void deleteAppointment(UUID id) {
         appointmentRepository.deleteById(id);
     }
 
     @Override
-    public Appointment cancelAppointment(Long id) {
+    public Appointment cancelAppointment(UUID id) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Appointment not found with ID: " + id));
         
@@ -136,38 +138,42 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Appointment completeAppointment(Long id) {
+    public Appointment completeAppointment(UUID id) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Appointment not found with ID: " + id));
         
-        appointment.complete();
+        appointment.completeAppointment();
         return appointmentRepository.save(appointment);
     }
 
     @Override
-    public Appointment addService(Long appointmentId, Service service) {
+    public Appointment addService(UUID appointmentId, Service service) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Appointment not found with ID: " + appointmentId));
         
-        appointment.addService(service);
+        appointment.addService(service.getId());
         return appointmentRepository.save(appointment);
     }
 
     @Override
-    public Appointment removeService(Long appointmentId, Service service) {
+    public Appointment removeService(UUID appointmentId, Service service) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Appointment not found with ID: " + appointmentId));
         
-        appointment.removeService(service);
+        appointment.removeService(service.getId());
         return appointmentRepository.save(appointment);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public boolean isTimeSlotAvailable(Company company, User employee, LocalDateTime start, LocalDateTime end) {
+    public boolean isTimeSlotAvailable(Company company, Employee employee, LocalDateTime start, LocalDateTime end) {
+        if (company == null || employee == null || start == null || end == null) {
+            return false;
+        }
+        
         // Check if there are any overlapping appointments for the employee in the given time slot
         List<Appointment> overlappingAppointments = appointmentRepository.findOverlappingAppointments(
-                company, employee, start, end);
+                company.getId(), employee.getId(), start, end);
         
         return overlappingAppointments.isEmpty();
     }

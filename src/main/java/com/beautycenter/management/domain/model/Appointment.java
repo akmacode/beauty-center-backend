@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Domain model representing an appointment in the system.
@@ -21,9 +22,10 @@ import java.util.Set;
 @AllArgsConstructor
 public class Appointment {
     
-    private Long id;
-    private Long customerId;
-    private Long employeeId;
+    private UUID id;
+    private Customer customer;
+    private Employee employee;
+    private Service service;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String notes;
@@ -32,10 +34,10 @@ public class Appointment {
     private AppointmentStatus status = AppointmentStatus.REQUESTED;
     
     @Builder.Default
-    private Set<Long> serviceIds = new HashSet<>();
+    private Set<UUID> additionalServiceIds = new HashSet<>();
     
     private BigDecimal totalPrice;
-    private Long companyId;
+    private UUID companyId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -122,11 +124,11 @@ public class Appointment {
      *
      * @param serviceId the service ID to add
      */
-    public void addService(Long serviceId) {
-        if (serviceIds == null) {
-            serviceIds = new HashSet<>();
+    public void addService(UUID serviceId) {
+        if (additionalServiceIds == null) {
+            additionalServiceIds = new HashSet<>();
         }
-        serviceIds.add(serviceId);
+        additionalServiceIds.add(serviceId);
     }
     
     /**
@@ -134,9 +136,9 @@ public class Appointment {
      *
      * @param serviceId the service ID to remove
      */
-    public void removeService(Long serviceId) {
-        if (serviceIds != null) {
-            serviceIds.remove(serviceId);
+    public void removeService(UUID serviceId) {
+        if (additionalServiceIds != null) {
+            additionalServiceIds.remove(serviceId);
         }
     }
 }
